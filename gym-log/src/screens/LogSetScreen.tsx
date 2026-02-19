@@ -1,22 +1,24 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
+import { 
+  View, Text, TextInput, Button, StyleSheet, Alert, Platform 
+} from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../App';
-import { Exercise, Set } from '../types/exercise';
+import { Set } from '../types/exercise';
 import { v4 as uuidv4 } from 'uuid';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'LogSet'>;
 
 export default function LogSetScreen({ route, navigation }: Props) {
   const { exercise, onSaveSet } = route.params;
-  const [reps, setReps] = useState('');
-  const [weight, setWeight] = useState('');
+  const [reps, setReps] = useState<string>('');
+  const [weight, setWeight] = useState<string>('');
 
   const handleSave = () => {
-    const repsNum = parseInt(reps, 10);
-    const weightNum = parseFloat(weight);
+    const repsNum = Number(reps);
+    const weightNum = Number(weight);
 
-    if (isNaN(repsNum) || isNaN(weightNum)) {
+    if (!Number.isFinite(repsNum) || !Number.isFinite(weightNum)) {
       Alert.alert('Invalid input', 'Please enter numeric values for reps and weight.');
       return;
     }
@@ -28,7 +30,7 @@ export default function LogSetScreen({ route, navigation }: Props) {
     };
 
     onSaveSet(exercise.id, newSet);
-    navigation.goBack(); // return to Exercise List
+    navigation.goBack();
   };
 
   return (
@@ -37,18 +39,27 @@ export default function LogSetScreen({ route, navigation }: Props) {
       <TextInput
         style={styles.input}
         placeholder="Reps"
-        keyboardType="numeric"
+        keyboardType="number-pad"
         value={reps}
         onChangeText={setReps}
+        returnKeyType="done"
+        editable={true}
       />
       <TextInput
         style={styles.input}
         placeholder="Weight (kg)"
-        keyboardType="numeric"
+        keyboardType="decimal-pad"
         value={weight}
         onChangeText={setWeight}
+        returnKeyType="done"
+        editable={true}
       />
-      <Button title="Save Set" onPress={handleSave} />
+
+      <Button 
+        title="Save Set" 
+        onPress={handleSave} 
+        disabled={reps.length === 0 || weight.length === 0} 
+      />
     </View>
   );
 }

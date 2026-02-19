@@ -1,8 +1,10 @@
-import { useState, useCallback } from 'react';
-import { Exercise, Set } from '../types/exercise';
+import React, { useState, useCallback } from 'react';
+import { 
+  FlatList, Text, TouchableOpacity, View, StyleSheet 
+} from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../App';
-import { FlatList, Text, TouchableOpacity, View, StyleSheet } from 'react-native';
+import { Exercise, Set } from '../types/exercise';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ExerciseList'>;
 
@@ -14,17 +16,20 @@ export default function ExerciseListScreen({ navigation }: Props) {
   ]);
 
   const handleSaveSet = useCallback((exerciseId: string, newSet: Set) => {
-    setExercises((prev) =>
-      prev.map((ex) =>
-        ex.id === exerciseId ? { ...ex, sets: [...(ex.sets || []), newSet] } : ex
+    setExercises(prev =>
+      prev.map(ex =>
+        ex.id === exerciseId
+          ? { ...ex, sets: [...(ex.sets ?? []), newSet] }
+          : ex
       )
     );
   }, []);
 
   const renderItem = ({ item }: { item: Exercise }) => {
-    const setsSummary = item.sets
-      ?.map((s) => `${s.reps}x${s.weight}kg`)
-      .join(', ') ?? 'No sets logged';
+    const setsSummary =
+      item.sets?.length
+        ? item.sets.map(s => `${s.reps}x${s.weight}kg`).join(', ')
+        : 'No sets logged';
 
     return (
       <TouchableOpacity
@@ -32,6 +37,7 @@ export default function ExerciseListScreen({ navigation }: Props) {
         onPress={() =>
           navigation.navigate('LogSet', { exercise: item, onSaveSet: handleSaveSet })
         }
+        activeOpacity={0.7}
       >
         <Text style={styles.name}>{item.name}</Text>
         <Text style={styles.bodyPart}>{item.bodyPart}</Text>
@@ -44,9 +50,10 @@ export default function ExerciseListScreen({ navigation }: Props) {
     <View style={styles.container}>
       <FlatList
         data={exercises}
-        keyExtractor={(item) => item.id}
+        keyExtractor={item => item.id}
         renderItem={renderItem}
         contentContainerStyle={{ paddingBottom: 50 }}
+        showsVerticalScrollIndicator={true}
       />
     </View>
   );
